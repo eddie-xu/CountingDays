@@ -4,206 +4,289 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>倒数日</title>
+    <!-- Framework7 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7@8/css/framework7.bundle.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <!-- Lunar Calendar Library -->
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/dist/lunar.min.js"></script>
     <style>
-        body {
-            margin: 0;
-            padding: 20px;
+        :root {
+            --f7-theme-color: #FFD700;
+            --f7-theme-color-rgb: 255, 215, 0;
+        }
+        .page {
             background-color: #FFD700;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.1);
         }
-        .header {
+        .calendar-day {
+            width: 40px;
+            height: 50px;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .header button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            background-color: rgba(255, 255, 255, 0.3);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-        }
-        .greeting {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        .date-display {
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-        .calendar-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .calendar-controls button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            position: relative;
+            text-align: center;
+            padding: 8px 4px;
             background-color: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
+            margin: 2px;
         }
-        .calendar-controls button.active {
-            background-color: #FF8C00;
+        
+        .calendar-day:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .calendar-day.selected {
+            background-color: #ff6b35;
             color: white;
         }
-        .month-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding: 5px;
+        
+        .solar-date {
+            font-size: 14px;
+            font-weight: bold;
         }
-        .month-selector button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            background-color: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            white-space: nowrap;
+        
+        .lunar-date {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-top: 2px;
         }
-        .month-selector button.active {
-            background-color: #FF8C00;
-            color: white;
-        }
-        .calendar {
+        .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            margin-bottom: 20px;
+            gap: 2px;
+            margin: 10px 0;
         }
         .calendar-header {
             text-align: center;
-            padding: 5px;
+            padding: 8px;
             font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            margin: 2px;
         }
-        .calendar-day {
+        .image-swiper {
+            height: 200px;
+            margin: 20px 0;
+        }
+        .image-slide {
             text-align: center;
             padding: 10px;
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            cursor: pointer;
         }
-        .calendar-day.active {
-            background-color: #FF8C00;
-            color: white;
-        }
-        .category-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding: 5px;
-        }
-        .category-selector button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 20px;
-            background-color: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .category-selector button.active {
-            background-color: #FF8C00;
-            color: white;
-        }
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .image-card {
-            background-color: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-            padding: 10px;
-            text-align: center;
-        }
-        .image-card img {
-            width: 100%;
-            height: 150px;
+        .image-slide img {
+            width: 120px;
+            height: 120px;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 10px;
             margin-bottom: 5px;
+        }
+        .input-container {
+            margin: 20px 0;
+        }
+        .date-display {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <button onclick="cancel()">取消</button>
-            <button onclick="add()">添加</button>
-        </div>
-        <div class="greeting">倒数到：</div>
-        <div class="date-display" id="selectedDate">你好</div>
-        <div class="calendar-controls">
-            <button onclick="toggleCalendarType('solar')" class="active" id="solarBtn">公历</button>
-            <button onclick="toggleCalendarType('lunar')" id="lunarBtn">农历</button>
-            <button onclick="resetDate()" id="resetBtn">重复</button>
-            <button onclick="remind()" id="remindBtn">提醒</button>
-        </div>
-        <div class="year-selector calendar-controls">
-            <button onclick="prevYear()">←</button>
-            <button class="active" id="yearDisplay">2025</button>
-            <button onclick="nextYear()">→</button>
-        </div>
-        <div class="month-selector" id="monthSelector"></div>
-        <div class="calendar" id="calendar"></div>
-        <div class="category-selector">
-            <button class="active">全部</button>
-            <button>工作</button>
-            <button>玩乐</button>
-            <button>爱情</button>
-        </div>
-        <div class="image-grid">
-            <div class="image-card">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234CAF50'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E甜蜜约会%3C/text%3E%3C/svg%3E" alt="甜蜜约会">
-                <div>甜蜜约会</div>
+    <div id="app">
+        <div class="page">
+            <!-- Navbar -->
+            <div class="navbar">
+                <div class="navbar-bg"></div>
+                <div class="navbar-inner">
+                    <div class="left">
+                        <a href="#" class="link" onclick="cancel()">取消</a>
+                    </div>
+                    <div class="right">
+                        <a href="#" class="link" onclick="add()">添加</a>
+                    </div>
+                </div>
             </div>
-            <div class="image-card">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23F44336'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E咕咕咕%3C/text%3E%3C/svg%3E" alt="咕咕咕">
-                <div>咕咕咕</div>
-            </div>
-            <div class="image-card">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%239C27B0'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E新生儿派对%3C/text%3E%3C/svg%3E" alt="新生儿派对">
-                <div>新生儿派对</div>
+            
+            <!-- Page content -->
+            <div class="page-content">
+                <div class="block">
+                    <div class="block-title">倒数到：</div>
+                    
+                    <!-- 输入框 -->
+                    <div class="input-container">
+                        <div class="list simple-list">
+                            <ul>
+                                <li>
+                                    <div class="item-content item-input">
+                                        <div class="item-inner">
+                                            <div class="item-input-wrap">
+                                                <input type="text" id="countdownTitle" placeholder="请输入倒数内容（如：生日、纪念日）" value="你好">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 选定日期显示 -->
+                    <div class="date-display" id="selectedDate">27 5月 2025</div>
+                    
+                    <!-- 功能按钮 -->
+                    <div class="segmented segmented-raised">
+                        <a href="#" class="button button-active" id="lunarBtn" onclick="toggleLunar()">农历</a>
+                        <a href="#" class="button" onclick="toggleRepeat()">重复</a>
+                        <a href="#" class="button" onclick="toggleRemind()">提醒</a>
+                    </div>
+                    
+                    <!-- 年份选择 -->
+                    <div class="block-title">年份</div>
+                    <div class="segmented segmented-raised">
+                        <a href="#" class="button" onclick="prevYear()">←</a>
+                        <a href="#" class="button button-active" id="yearDisplay">2025</a>
+                        <a href="#" class="button" onclick="nextYear()">→</a>
+                    </div>
+                    
+                    <!-- 月份选择 -->
+                    <div class="block-title">月份</div>
+                    <div class="segmented segmented-raised" id="monthSelector"></div>
+                    
+                    <!-- 日历 -->
+                    <div class="block-title">日期</div>
+                    <div class="calendar-grid" id="calendar"></div>
+                    
+                    <!-- 分类选择 -->
+                    <div class="block-title">分类</div>
+                    <div class="segmented segmented-raised">
+                        <a href="#" class="button button-active">全部</a>
+                        <a href="#" class="button">工作</a>
+                        <a href="#" class="button">玩乐</a>
+                        <a href="#" class="button">爱情</a>
+                    </div>
+                    
+                    <!-- 图片选择器 -->
+                    <div class="block-title">选择主题</div>
+                    <div class="swiper image-swiper">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234CAF50'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E甜蜜约会%3C/text%3E%3C/svg%3E" alt="甜蜜约会">
+                                <div>甜蜜约会</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23F44336'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E咕咕咕%3C/text%3E%3C/svg%3E" alt="咕咕咕">
+                                <div>咕咕咕</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%239C27B0'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E新生儿派对%3C/text%3E%3C/svg%3E" alt="新生儿派对">
+                                <div>新生儿派对</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23FF9800'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E生日快乐%3C/text%3E%3C/svg%3E" alt="生日快乐">
+                                <div>生日快乐</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232196F3'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E工作计划%3C/text%3E%3C/svg%3E" alt="工作计划">
+                                <div>工作计划</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23E91E63'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E浪漫时光%3C/text%3E%3C/svg%3E" alt="浪漫时光">
+                                <div>浪漫时光</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23795548'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E旅行计划%3C/text%3E%3C/svg%3E" alt="旅行计划">
+                                <div>旅行计划</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23607D8B'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E学习目标%3C/text%3E%3C/svg%3E" alt="学习目标">
+                                <div>学习目标</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23009688'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E健身计划%3C/text%3E%3C/svg%3E" alt="健身计划">
+                                <div>健身计划</div>
+                            </div>
+                            <div class="swiper-slide image-slide">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23CDDC39'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E特殊日子%3C/text%3E%3C/svg%3E" alt="特殊日子">
+                                <div>特殊日子</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    
+    <!-- Framework7 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/framework7@8/js/framework7.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.12/lunar.min.js"></script>
     <script>
+        // Framework7 App
+        const app = new Framework7({
+            el: '#app',
+            theme: 'auto'
+        });
+        
         let currentDate = new Date();
-        let isLunarCalendar = false;
-
-        function toggleCalendarType(type) {
-            isLunarCalendar = type === 'lunar';
-            document.getElementById('solarBtn').classList.toggle('active', !isLunarCalendar);
-            document.getElementById('lunarBtn').classList.toggle('active', isLunarCalendar);
+        let showLunar = true;
+        let selectedDay = 27;
+        let swiper;
+        
+        // 初始化Swiper
+        function initSwiper() {
+            swiper = new Swiper('.image-swiper', {
+                slidesPerView: 3,
+                spaceBetween: 10,
+                centeredSlides: true,
+                loop: true
+            });
+        }
+        
+        function toggleLunar() {
+            showLunar = !showLunar;
+            const btn = document.getElementById('lunarBtn');
+            btn.classList.toggle('button-active', showLunar);
             updateCalendar();
         }
-
+        
+        function toggleRepeat() {
+            // 重复功能实现
+            console.log('切换重复功能');
+        }
+        
+        function toggleRemind() {
+            // 提醒功能实现
+            console.log('切换提醒功能');
+        }
+        
         function updateMonthSelector() {
             const monthSelector = document.getElementById('monthSelector');
             monthSelector.innerHTML = '';
-            for (let i = 0; i < 12; i++) {
-                const btn = document.createElement('button');
-                btn.textContent = `${i + 1}月`;
-                btn.onclick = () => selectMonth(i);
+            const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+            
+            months.forEach((monthName, i) => {
+                const btn = document.createElement('a');
+                btn.href = '#';
+                btn.className = 'button';
+                btn.textContent = monthName;
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    selectMonth(i);
+                };
                 if (i === currentDate.getMonth()) {
-                    btn.classList.add('active');
+                    btn.classList.add('button-active');
                 }
                 monthSelector.appendChild(btn);
-            }
+            });
         }
-
+        
         function updateCalendar() {
             const calendar = document.getElementById('calendar');
             calendar.innerHTML = '';
-
+            
             // Add weekday headers
             const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
             weekdays.forEach(day => {
@@ -212,80 +295,100 @@
                 dayHeader.textContent = day;
                 calendar.appendChild(dayHeader);
             });
-
+            
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-
+            
             // Add empty cells for days before first day of month
             for (let i = 0; i < firstDay.getDay(); i++) {
                 calendar.appendChild(document.createElement('div'));
             }
-
+            
             // Add days of month
             for (let day = 1; day <= lastDay.getDate(); day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
-                if (isLunarCalendar) {
-                    const lunar = Lunar.fromDate(new Date(year, month, day));
-                    dayElement.textContent = lunar.getDayInChinese();
-                } else {
-                    dayElement.textContent = day;
+                
+                // 公历日期
+                const solarDiv = document.createElement('div');
+                solarDiv.className = 'solar-date';
+                solarDiv.textContent = day;
+                dayElement.appendChild(solarDiv);
+                
+                // 农历日期（如果开启显示）
+                if (showLunar) {
+                    try {
+                        const lunar = Lunar.fromDate(new Date(year, month, day));
+                        const lunarDiv = document.createElement('div');
+                        lunarDiv.className = 'lunar-date';
+                        lunarDiv.textContent = lunar.getDayInChinese();
+                        dayElement.appendChild(lunarDiv);
+                    } catch (e) {
+                        console.log('农历转换失败:', e);
+                    }
                 }
+                
+                if (day === selectedDay) {
+                    dayElement.classList.add('selected');
+                }
+                
                 dayElement.onclick = () => selectDay(day);
                 calendar.appendChild(dayElement);
             }
         }
-
+        
         function selectMonth(month) {
             currentDate.setMonth(month);
             updateMonthSelector();
             updateCalendar();
         }
-
+        
         function prevYear() {
             currentDate.setFullYear(currentDate.getFullYear() - 1);
             document.getElementById('yearDisplay').textContent = currentDate.getFullYear();
             updateCalendar();
         }
-
+        
         function nextYear() {
             currentDate.setFullYear(currentDate.getFullYear() + 1);
             document.getElementById('yearDisplay').textContent = currentDate.getFullYear();
             updateCalendar();
         }
-
+        
         function selectDay(day) {
+            selectedDay = day;
             const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-            document.getElementById('selectedDate').textContent = 
-                `${selectedDate.getFullYear()}年${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日`;
-            if (isLunarCalendar) {
-                const lunar = Lunar.fromDate(selectedDate);
-                document.getElementById('selectedDate').textContent += 
-                    ` (农历${lunar.getMonthInChinese()}月${lunar.getDayInChinese()})`;
-            }
+            
+            // 更新显示的日期
+            const dateStr = `${selectedDate.getDate()} ${selectedDate.getMonth() + 1}月 ${selectedDate.getFullYear()}`;
+            document.getElementById('selectedDate').textContent = dateStr;
+            
+            // 重新渲染日历以更新选中状态
+            updateCalendar();
         }
-
-        function resetDate() {
-            // 重复功能实现
-        }
-
-        function remind() {
-            // 提醒功能实现
-        }
-
+        
         function cancel() {
-            // 取消功能实现
+            console.log('取消操作');
         }
-
+        
         function add() {
-            // 添加功能实现
+            const title = document.getElementById('countdownTitle').value;
+            const date = document.getElementById('selectedDate').textContent;
+            console.log('添加倒数日:', title, date);
         }
-
-        // 初始化日历
-        updateMonthSelector();
-        updateCalendar();
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateMonthSelector();
+            updateCalendar();
+            
+            // 延迟初始化Swiper，确保DOM已渲染
+            setTimeout(() => {
+                initSwiper();
+            }, 100);
+        });
     </script>
 </body>
 </html>
