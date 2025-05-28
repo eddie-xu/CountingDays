@@ -2,558 +2,290 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>日历提醒</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>倒数日</title>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/dist/lunar.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: #f5d742;
-            color: #333;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
-        }
-        
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
+            margin: 0;
             padding: 20px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
+            background-color: #FFD700;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
-        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
         }
-        
         .header button {
-            background: none;
+            padding: 8px 16px;
             border: none;
-            color: #644e00;
-            font-size: 18px;
-            padding: 10px 15px;
-            font-weight: bold;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
             cursor: pointer;
         }
-        
-        .content {
-            background-color: #ffd93b;
-            border-radius: 20px;
-            padding: 20px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .event-title {
+        .greeting {
+            font-size: 24px;
             margin-bottom: 10px;
-            color: #644e00;
         }
-        
-        .event-title h2 {
+        .date-display {
             font-size: 20px;
-            font-weight: normal;
+            margin-bottom: 20px;
         }
-        
-        .event-name {
-            margin-bottom: 30px;
-        }
-        
-        .event-name h1 {
-            font-size: 38px;
-            color: #644e00;
-        }
-        
-        .event-date {
-            font-size: 28px;
-            color: #644e00;
-            margin-bottom: 30px;
-        }
-        
-        .options {
+        .calendar-controls {
             display: flex;
             gap: 10px;
-            margin-bottom: 30px;
-        }
-        
-        .option-btn {
-            background-color: #ffeea0;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #644e00;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        
-        .option-btn img {
-            width: 20px;
-            height: 20px;
-        }
-        
-        .year-selector {
-            display: flex;
-            justify-content: space-between;
-            background-color: #ffeea0;
-            border-radius: 30px;
             margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
         }
-        
-        .year-selector button {
-            background: none;
+        .calendar-controls button {
+            padding: 8px 16px;
             border: none;
-            color: #644e00;
-            font-size: 24px;
-            padding: 15px;
-            cursor: pointer;
-            z-index: 1;
-        }
-        
-        .years {
-            display: flex;
-            justify-content: space-around;
-            flex: 1;
-        }
-        
-        .year {
-            padding: 15px 0;
-            font-size: 20px;
-            color: #644e00;
-            cursor: pointer;
-        }
-        
-        .year.active {
-            background-color: #ffb700;
             border-radius: 20px;
-            font-weight: bold;
-            padding: 15px 30px;
+            background-color: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
         }
-        
+        .calendar-controls button.active {
+            background-color: #FF8C00;
+            color: white;
+        }
         .month-selector {
             display: flex;
-            justify-content: space-around;
-            background-color: #ffeea0;
-            border-radius: 30px;
+            gap: 10px;
             margin-bottom: 20px;
             overflow-x: auto;
-            scrollbar-width: none;
+            padding: 5px;
         }
-        
-        .month-selector::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .month {
-            padding: 15px 30px;
-            font-size: 18px;
-            color: #644e00;
+        .month-selector button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             white-space: nowrap;
         }
-        
-        .month.active {
-            background-color: #ffb700;
-            border-radius: 20px;
-            font-weight: bold;
+        .month-selector button.active {
+            background-color: #FF8C00;
+            color: white;
         }
-        
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        
-        .weekday {
-            padding: 10px;
-            color: #644e00;
-        }
-        
-        .days {
+        .calendar {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
             margin-bottom: 20px;
         }
-        
-        .day {
+        .calendar-header {
             text-align: center;
-            padding: 15px 0;
-            font-size: 18px;
-            color: #644e00;
-            cursor: pointer;
-            border-radius: 10px;
-        }
-        
-        .day.today {
-            background-color: #ffb700;
+            padding: 5px;
             font-weight: bold;
         }
-        
-        .day.other-month {
-            color: #a08b00;
+        .calendar-day {
+            text-align: center;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
         }
-        
-        .categories {
+        .calendar-day.active {
+            background-color: #FF8C00;
+            color: white;
+        }
+        .category-selector {
             display: flex;
             gap: 10px;
-            background-color: #ffeea0;
-            border-radius: 30px;
-            padding: 10px;
-            overflow-x: auto;
-            scrollbar-width: none;
             margin-bottom: 20px;
+            overflow-x: auto;
+            padding: 5px;
         }
-        
-        .categories::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .category {
-            padding: 10px 25px;
-            font-size: 16px;
-            color: #644e00;
+        .category-selector button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             white-space: nowrap;
-            border-radius: 20px;
         }
-        
-        .category.active {
-            background-color: #ffb700;
-            font-weight: bold;
-        }
-        
-        .cards {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding: 10px 0;
-            scrollbar-width: none;
-        }
-        
-        .cards::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .card {
-            flex: 0 0 auto;
-            width: 120px;
-            height: 180px;
-            border-radius: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        .category-selector button.active {
+            background-color: #FF8C00;
             color: white;
-            font-size: 24px;
-            font-weight: bold;
-            position: relative;
-            overflow: hidden;
         }
-        
-        .card img {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 10px;
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        
-        .card-yellow {
-            background-color: #9c7c00;
+        .image-card {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
         }
-        
-        .card-red {
-            background-color: #8c1458;
-        }
-        
-        .card-purple {
-            background-color: #a34bab;
-        }
-        
-        .card-black {
-            background-color: #333333;
-        }
-        
-        .card-title {
-            position: absolute;
-            bottom: 10px;
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            color: white;
-            font-size: 14px;
-        }
-        
-        .time {
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .icons {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .footer {
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .bottom-indicator {
-            width: 40%;
-            height: 5px;
-            background-color: #333;
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
             border-radius: 5px;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="status-bar">
-        <div class="time">21:30</div>
-        <div class="icons">
-            <span>●●●●</span>
-            <span>📶</span>
-            <span>🔋</span>
-        </div>
-    </div>
-
     <div class="container">
         <div class="header">
-            <button>取消</button>
-            <button>添加</button>
+            <button onclick="cancel()">取消</button>
+            <button onclick="add()">添加</button>
         </div>
-        
-        <div class="content">
-            <div class="event-title">
-                <h2>倒数到:</h2>
-            </div>
-            
-            <div class="event-name">
-                <h1>你好</h1>
-            </div>
-            
-            <div class="event-date">
-                27 5月 2025
-            </div>
-            
-            <div class="options">
-                <button class="option-btn">
-                    <span>🌙</span>
-                    农历
-                </button>
-                <button class="option-btn">
-                    <span>🔄</span>
-                    重复
-                </button>
-                <button class="option-btn">
-                    <span>🔔</span>
-                    提醒
-                </button>
-            </div>
-            
-            <div class="year-selector">
-                <button class="prev">〈</button>
-                <div class="years">
-                    <div class="year">2025</div>
-                    <div class="year active">2026</div>
-                    <div class="year">2027</div>
-                </div>
-                <button class="next">〉</button>
-            </div>
-            
-            <div class="month-selector">
-                <div class="month">4月</div>
-                <div class="month active">5月</div>
-                <div class="month">6月</div>
-                <div class="month">7月</div>
-                <div class="month">8月</div>
-            </div>
-            
-            <div class="weekdays">
-                <div class="weekday">周一</div>
-                <div class="weekday">周二</div>
-                <div class="weekday">周三</div>
-                <div class="weekday">周四</div>
-                <div class="weekday">周五</div>
-                <div class="weekday">周六</div>
-                <div class="weekday">周日</div>
-            </div>
-            
-            <div class="days">
-                <div class="day">26</div>
-                <div class="day today">27</div>
-                <div class="day">28</div>
-                <div class="day">29</div>
-                <div class="day">30</div>
-                <div class="day">31</div>
-                <div class="day other-month">1</div>
-                <div class="day other-month">2</div>
-                <div class="day other-month">3</div>
-                <div class="day other-month">4</div>
-                <div class="day other-month">5</div>
-                <div class="day other-month">6</div>
-                <div class="day other-month">7</div>
-                <div class="day other-month">8</div>
-            </div>
-            
-            <div class="categories">
-                <div class="category active">全部</div>
-                <div class="category">工作</div>
-                <div class="category">玩乐</div>
-                <div class="category">爱情</div>
-                <div class="category">其他</div>
-            </div>
-            
-            <div class="cards">
-                <div class="card card-yellow">
-                    <div>今天</div>
-                    <div class="card-title">甜甜圈 🍩</div>
-                </div>
-                <div class="card card-red">
-                    <div>今天</div>
-                    <div class="card-title">收包裹 📦</div>
-                </div>
-                <div class="card card-purple">
-                    <div>今天</div>
-                    <div class="card-title">新生儿派对 👶</div>
-                </div>
-                <div class="card card-black">
-                    <div>今天</div>
-                    <div class="card-title">万圣节 🎃</div>
-                </div>
-            </div>
+        <div class="greeting">倒数到：</div>
+        <div class="date-display" id="selectedDate">你好</div>
+        <div class="calendar-controls">
+            <button onclick="toggleCalendarType('solar')" class="active" id="solarBtn">公历</button>
+            <button onclick="toggleCalendarType('lunar')" id="lunarBtn">农历</button>
+            <button onclick="resetDate()" id="resetBtn">重复</button>
+            <button onclick="remind()" id="remindBtn">提醒</button>
         </div>
-        
-        <div class="footer">
-            <div class="bottom-indicator"></div>
+        <div class="year-selector calendar-controls">
+            <button onclick="prevYear()">←</button>
+            <button class="active" id="yearDisplay">2025</button>
+            <button onclick="nextYear()">→</button>
+        </div>
+        <div class="month-selector" id="monthSelector"></div>
+        <div class="calendar" id="calendar"></div>
+        <div class="category-selector">
+            <button class="active">全部</button>
+            <button>工作</button>
+            <button>玩乐</button>
+            <button>爱情</button>
+        </div>
+        <div class="image-grid">
+            <div class="image-card">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%234CAF50'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E甜蜜约会%3C/text%3E%3C/svg%3E" alt="甜蜜约会">
+                <div>甜蜜约会</div>
+            </div>
+            <div class="image-card">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23F44336'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E咕咕咕%3C/text%3E%3C/svg%3E" alt="咕咕咕">
+                <div>咕咕咕</div>
+            </div>
+            <div class="image-card">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%239C27B0'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='white' text-anchor='middle' dominant-baseline='middle'%3E新生儿派对%3C/text%3E%3C/svg%3E" alt="新生儿派对">
+                <div>新生儿派对</div>
+            </div>
         </div>
     </div>
-
     <script>
-        // 初始化当前日期
-        const today = new Date();
-        
-        // 日期选择功能
-        document.querySelectorAll('.day').forEach(day => {
-            day.addEventListener('click', function() {
-                // 移除之前的选中状态
-                document.querySelectorAll('.day').forEach(d => d.classList.remove('today'));
-                // 添加新的选中状态
-                this.classList.add('today');
-                
-                // 更新显示日期
-                updateSelectedDate();
-            });
-        });
-        
-        // 月份选择功能
-        document.querySelectorAll('.month').forEach(month => {
-            month.addEventListener('click', function() {
-                // 移除之前的选中状态
-                document.querySelectorAll('.month').forEach(m => m.classList.remove('active'));
-                // 添加新的选中状态
-                this.classList.add('active');
-                
-                // 更新显示日期
-                updateSelectedDate();
-            });
-        });
-        
-        // 年份选择功能
-        document.querySelectorAll('.year').forEach(year => {
-            year.addEventListener('click', function() {
-                // 移除之前的选中状态
-                document.querySelectorAll('.year').forEach(y => y.classList.remove('active'));
-                // 添加新的选中状态
-                this.classList.add('active');
-                
-                // 更新显示日期
-                updateSelectedDate();
-            });
-        });
-        
-        // 类别选择功能
-        document.querySelectorAll('.category').forEach(category => {
-            category.addEventListener('click', function() {
-                // 移除之前的选中状态
-                document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
-                // 添加新的选中状态
-                this.classList.add('active');
-            });
-        });
-        
-        // 更新选中日期显示
-        function updateSelectedDate() {
-            const selectedDay = document.querySelector('.day.today').textContent;
-            const selectedMonth = document.querySelector('.month.active').textContent;
-            const selectedYear = document.querySelector('.year.active').textContent;
-            
-            document.querySelector('.event-date').textContent = `${selectedDay} ${selectedMonth} ${selectedYear}`;
+        let currentDate = new Date();
+        let isLunarCalendar = false;
+
+        function toggleCalendarType(type) {
+            isLunarCalendar = type === 'lunar';
+            document.getElementById('solarBtn').classList.toggle('active', !isLunarCalendar);
+            document.getElementById('lunarBtn').classList.toggle('active', isLunarCalendar);
+            updateCalendar();
         }
-        
-        // 上一年按钮
-        document.querySelector('.prev').addEventListener('click', function() {
-            const years = document.querySelectorAll('.year');
-            const activeYearIndex = Array.from(years).findIndex(year => year.classList.contains('active'));
-            
-            if (activeYearIndex > 0) {
-                years[activeYearIndex].classList.remove('active');
-                years[activeYearIndex - 1].classList.add('active');
-                updateSelectedDate();
+
+        function updateMonthSelector() {
+            const monthSelector = document.getElementById('monthSelector');
+            monthSelector.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = `${i + 1}月`;
+                btn.onclick = () => selectMonth(i);
+                if (i === currentDate.getMonth()) {
+                    btn.classList.add('active');
+                }
+                monthSelector.appendChild(btn);
             }
-        });
-        
-        // 下一年按钮
-        document.querySelector('.next').addEventListener('click', function() {
-            const years = document.querySelectorAll('.year');
-            const activeYearIndex = Array.from(years).findIndex(year => year.classList.contains('active'));
-            
-            if (activeYearIndex < years.length - 1) {
-                years[activeYearIndex].classList.remove('active');
-                years[activeYearIndex + 1].classList.add('active');
-                updateSelectedDate();
-            }
-        });
-        
-        // 初始化时间显示
-        function updateClock() {
-            const now = new Date();
-            let hours = now.getHours();
-            let minutes = now.getMinutes();
-            
-            // 格式化时间
-            hours = hours < 10 ? '0' + hours : hours;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            
-            document.querySelector('.time').textContent = `${hours}:${minutes}`;
         }
-        
-        // 每分钟更新时间
-        updateClock();
-        setInterval(updateClock, 60000);
+
+        function updateCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+
+            // Add weekday headers
+            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            weekdays.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'calendar-header';
+                dayHeader.textContent = day;
+                calendar.appendChild(dayHeader);
+            });
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            // Add empty cells for days before first day of month
+            for (let i = 0; i < firstDay.getDay(); i++) {
+                calendar.appendChild(document.createElement('div'));
+            }
+
+            // Add days of month
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                if (isLunarCalendar) {
+                    const lunar = Lunar.fromDate(new Date(year, month, day));
+                    dayElement.textContent = lunar.getDayInChinese();
+                } else {
+                    dayElement.textContent = day;
+                }
+                dayElement.onclick = () => selectDay(day);
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        function selectMonth(month) {
+            currentDate.setMonth(month);
+            updateMonthSelector();
+            updateCalendar();
+        }
+
+        function prevYear() {
+            currentDate.setFullYear(currentDate.getFullYear() - 1);
+            document.getElementById('yearDisplay').textContent = currentDate.getFullYear();
+            updateCalendar();
+        }
+
+        function nextYear() {
+            currentDate.setFullYear(currentDate.getFullYear() + 1);
+            document.getElementById('yearDisplay').textContent = currentDate.getFullYear();
+            updateCalendar();
+        }
+
+        function selectDay(day) {
+            const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+            document.getElementById('selectedDate').textContent = 
+                `${selectedDate.getFullYear()}年${selectedDate.getMonth() + 1}月${selectedDate.getDate()}日`;
+            if (isLunarCalendar) {
+                const lunar = Lunar.fromDate(selectedDate);
+                document.getElementById('selectedDate').textContent += 
+                    ` (农历${lunar.getMonthInChinese()}月${lunar.getDayInChinese()})`;
+            }
+        }
+
+        function resetDate() {
+            // 重复功能实现
+        }
+
+        function remind() {
+            // 提醒功能实现
+        }
+
+        function cancel() {
+            // 取消功能实现
+        }
+
+        function add() {
+            // 添加功能实现
+        }
+
+        // 初始化日历
+        updateMonthSelector();
+        updateCalendar();
     </script>
 </body>
 </html>
